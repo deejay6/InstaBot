@@ -40,8 +40,9 @@ def add_user():
         if user_info['meta']['code'] == 200:
             if len(user_info['data']):
                 id = user_info['data'][0]['id']
-                print id
-                print user_info
+                # print id
+                # print user_info
+                print "User has been added successfully!!"
                 user_list.append(User(username, id))
         else:
             print "Status code not 200!"
@@ -51,31 +52,38 @@ def add_user():
 
 def fetch_user_details():
     index = select_user()
-    id = user_list[index].id
-    request_url = (BASE_URL + 'users/%s?access_token=%s') % (id, ACCESS_TOKEN)
-    print 'GET request url : %s' % (request_url)
-    try:
-        user_info = requests.get(request_url).json()
-        if user_info['meta']['code'] == 200:  # HTTP 200 means transmission is OK
-            if len(user_info['data']):
-                print colored("Username: ", "red"), '%s' % colored(user_info['data']['username'], "blue")
-                print colored("Bio: ", "red"), '%s' % colored(user_info['data']['bio'], "blue")
-                print colored('Number of followers: ', "red"), '%s' % colored(user_info['data']['counts']['followed_by'], "blue")
-                print colored('Number of people you are following: ', "red"), '%s' % colored(user_info['data']['counts']['follows'],
-                                                                                             "blue")
-                print colored('Number of posts: ', "red"), '%s' % colored(user_info['data']['counts']['media'], "blue")
-                print user_info
+    if index:
+        id = user_list[index].id
+        request_url = (BASE_URL + 'users/%s?access_token=%s') % (id, ACCESS_TOKEN)
+        print 'GET request url : %s' % (request_url)
+        try:
+            user_info = requests.get(request_url).json()
+            if user_info['meta']['code'] == 200:  # HTTP 200 means transmission is OK
+                if len(user_info['data']):
+                    print colored("Username: ", "red"), '%s' % colored(user_info['data']['username'], "blue")
+                    if len(user_info['data']['bio']):
+                        print colored("Bio: ", "red"), '%s' % colored(user_info['data']['bio'], "blue")
+                    else:
+                        print colored("Bio: ", "red"), '%s' % colored("No Bio in his profile", "blue")
+                    print colored('Number of followers: ', "red"), '%s' % colored(user_info['data']['counts']['followed_by'], "blue")
+                    print colored('Number of people you are following: ', "red"), '%s' % colored(
+                        user_info['data']['counts']['follows'],
+                        "blue")
+                    print colored('Number of posts: ', "red"), '%s' % colored(user_info['data']['counts']['media'], "blue")
+                    # print user_info
+                else:
+                    print 'User does not exist!'
             else:
-                print 'User does not exist!'
-        else:
-            print 'Status code other than 200 received!'
-    except:
-        print "Something Wrong with the url"
+                print 'Status code other than 200 received!'
+        except:
+            print "Something Wrong with the url"
+    else:
+        print 'Add Users Please'
 
 
 def select_user():
     if not user_list:
-        print 'Add Users Please'
+        return 0
     else:
         index = 1
         for i in range(0, len(user_list)):
@@ -91,6 +99,54 @@ def select_user():
         choice = int(choice)
         return choice-1
 
-self_info()
-add_user()
-fetch_user_details()
+
+def fetch_recent_posts():
+    pass
+
+
+def fetch_user_recent_posts():
+    pass
+
+
+def start():
+
+    while True:
+        print 'Hey! Welcome to instaBot!'
+        print 'Here are your menu options:'
+        print "1.Get your own details"
+        print "2.Add User"
+        print "3.Fetch User Details"
+        print "4.Fetch your own recent post"
+        print "5.Fetch the recent post of a user"
+        # print "e.Ge a list of people who have liked the recent post of a user\n"
+        # print "f.Like the recent post of a user\n"
+        # print "g.Get a list of comments on the recent post of a user\n"
+        # print "h.Make a comment on the recent post of a user\n"
+        # print "i.Delete negative comments from the recent post of a user\n"
+        print "6.Exit"
+        while True:
+            choice = raw_input("Enter Your Choice: ")
+            try:
+                choice = int(choice)
+                break
+            except:
+                print 'Please Enter Valid Option'
+        choice = int(choice)
+        if choice == 1:
+            self_info()
+        elif choice == 2:
+            add_user()
+        elif choice == 3:
+            fetch_user_details()
+        elif choice == 4:
+            fetch_recent_posts()
+        elif choice == 5:
+            fetch_user_recent_posts()
+        elif choice == 6:
+            exit()
+        else:
+            print "Enter valid option"
+        ch = raw_input("Do you wish to continue: y/n  ")
+        if ch.upper() == "N":
+            break
+start()
