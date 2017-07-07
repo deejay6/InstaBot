@@ -1,4 +1,4 @@
-import requests
+import requests, urllib
 from termcolor import colored
 from access_token import ACCESS_TOKEN
 from user_detail import User, user_list
@@ -49,6 +49,8 @@ def add_user():
     except:
         print "Url request exception occurred!"
 
+# Function to fetch user details by selecting a user
+
 
 def fetch_user_details():
     index = select_user()
@@ -80,6 +82,8 @@ def fetch_user_details():
     else:
         print 'Add Users Please'
 
+# Function to select user for further operations
+
 
 def select_user():
     if not user_list:
@@ -99,9 +103,27 @@ def select_user():
         choice = int(choice)
         return choice-1
 
+# Function to fetch recent posts of  user by selecting it from list.
+
 
 def fetch_recent_posts():
-    pass
+    count = int(raw_input("Enter number of posts you want to retrieve: "))
+    request_url = (BASE_URL + 'users/self/media/recent/?access_token=%s&count=%d') % (ACCESS_TOKEN, count)
+    print 'GET request url : %s' % (request_url)
+    own_media = requests.get(request_url).json()
+
+    if own_media['meta']['code'] == 200:
+        if len(own_media['data']):
+            for i in range(0, count):
+                image_name = own_media['data'][i]['id'] + '.jpeg'
+                image_url = own_media['data'][i]['images']['standard_resolution']['url']
+                urllib.urlretrieve(image_url, image_name)
+                print 'Your image has been downloaded!'
+            print own_media
+        else:
+            print 'Post does not exist!'
+    else:
+        print 'Status code other than 200 received!'
 
 
 def fetch_user_recent_posts():
