@@ -44,19 +44,42 @@ def add_user():
                 # print user_info
                 print "User has been added successfully!!"
                 user_list.append(User(username, id))
+            else:
+                print "Invalid username!!"
         else:
             print "Status code not 200!"
     except:
         print "Url request exception occurred!"
+
+# Function to select user for further operations
+
+
+def select_user():
+    if not user_list:
+        return None
+    else:
+        index = 1
+        for i in range(0, len(user_list)):
+            print '%d %s' % (index, user_list[i].name)
+            index = index + 1
+            while True:
+                choice = raw_input("Enter Your Choice: ")
+                try:
+                    choice = int(choice)
+                    break
+                except:
+                    print colored("Enter Valid Choice", "red")
+        choice = int(choice)
+        return choice - 1
 
 # Function to fetch user details by selecting a user
 
 
 def fetch_user_details():
     index = select_user()
-    if index:
-        id = user_list[index].id
-        request_url = (BASE_URL + 'users/%s?access_token=%s') % (id, ACCESS_TOKEN)
+    if index is not None:
+        id1 = user_list[index].id
+        request_url = (BASE_URL + 'users/%s?access_token=%s') % (id1, ACCESS_TOKEN)
         print 'GET request url : %s' % (request_url)
         try:
             user_info = requests.get(request_url).json()
@@ -82,52 +105,61 @@ def fetch_user_details():
     else:
         print 'Add Users Please'
 
-# Function to select user for further operations
 
-
-def select_user():
-    if not user_list:
-        return 0
-    else:
-        index = 1
-        for i in range(0, len(user_list)):
-            print '%d %s' % (index, user_list[i].name)
-            index = index + 1
-        while True:
-            choice = raw_input("Enter Your Choice: ")
-            try:
-                choice = int(choice)
-                break
-            except:
-                print colored("Enter Valid Choice", "red")
-        choice = int(choice)
-        return choice-1
-
-# Function to fetch recent posts of  user by selecting it from list.
+# Function to fetch  self recent posts.
 
 
 def fetch_recent_posts():
     count = int(raw_input("Enter number of posts you want to retrieve: "))
-    request_url = (BASE_URL + 'users/self/media/recent/?access_token=%s&count=%d') % (ACCESS_TOKEN, count)
-    print 'GET request url : %s' % (request_url)
-    own_media = requests.get(request_url).json()
-
-    if own_media['meta']['code'] == 200:
-        if len(own_media['data']):
-            for i in range(0, count):
-                image_name = own_media['data'][i]['id'] + '.jpeg'
-                image_url = own_media['data'][i]['images']['standard_resolution']['url']
-                urllib.urlretrieve(image_url, image_name)
-                print 'Your image has been downloaded!'
-            print own_media
+    try:
+        request_url = (BASE_URL + 'users/self/media/recent/?access_token=%s&count=%d') % (ACCESS_TOKEN, count)
+        print 'GET request url : %s' % (request_url)
+        own_media = requests.get(request_url).json()
+        if own_media['meta']['code'] == 200:
+            if len(own_media['data']):
+                for i in range(0, count):
+                    image_name = own_media['data'][i]['id'] + '.jpeg'
+                    image_url = own_media['data'][i]['images']['standard_resolution']['url']
+                    urllib.urlretrieve(image_url, image_name)
+                    print 'Your image has been downloaded!'
+                print own_media
+            else:
+                print 'Post does not exist!'
         else:
-            print 'Post does not exist!'
-    else:
-        print 'Status code other than 200 received!'
+            print 'Status code other than 200 received!'
+    except:
+        print "Something wrong with url"
+
+# Function to fetch  recent posts of  user by selecting it from list.
 
 
 def fetch_user_recent_posts():
-    pass
+    index = select_user()
+    if index is not None:
+        id1 = user_list[index].id
+        count = int(raw_input("Enter number of posts you want to retrieve: "))
+        try:
+            request_url = (BASE_URL + 'users/%s/media/recent/?access_token=%s&count=%d') % (id1, ACCESS_TOKEN, count)
+            print 'GET request url : %s' % (request_url)
+            own_media = requests.get(request_url).json()
+            if own_media['meta']['code'] == 200:
+                if len(own_media['data']):
+                    for i in range(0, count):
+                        image_name = own_media['data'][i]['id'] + '.jpeg'
+                        image_url = own_media['data'][i]['images']['standard_resolution']['url']
+                        urllib.urlretrieve(image_url, image_name)
+                        print 'Your image has been downloaded!'
+                    print own_media
+                else:
+                    print 'Post does not exist!'
+            else:
+                print 'Status code other than 200 received!'
+        except:
+            print "Something wrong with url"
+    else:
+        print "Please Add Users"
+
+
 
 
 def start():
