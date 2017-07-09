@@ -60,7 +60,6 @@ def select_user():
     else:
         index = 1
         for i in range(0, len(user_list)):
-            print user_list
             print '%d.  %s' % (index, user_list[i].name)
             index = index + 1
         while True:
@@ -209,8 +208,8 @@ def delete_like():
                 try:
                     request_url = (BASE_URL + 'media/%s/likes?access_token=%s') % (media_id, ACCESS_TOKEN)
                     print 'GET request url : %s' % (request_url)
-                    post_like = requests.delete(request_url).json()
-                    if post_like['meta']['code'] == 200:
+                    delete_like = requests.delete(request_url).json()
+                    if delete_like['meta']['code'] == 200:
                         print "You have unliked the pic successfully!!"
                         break
                     else:
@@ -221,6 +220,56 @@ def delete_like():
                     break
     else:
         print "Please add users!!"
+
+
+def post_comment():
+    index = select_user()
+    name = user_list[index].name
+    if index is not None:
+        for i in range(0, len(media_list)):
+            if media_list[i].name == name:
+                media_id = media_list[i].media_id
+                try:
+                    request_url = (BASE_URL + 'media/%s/comments?access_token=%s') % (media_id, ACCESS_TOKEN)
+                    print 'GET request url : %s' % (request_url)
+                    list_comment = requests.get(request_url).json()
+                    if list_comment['meta']['code'] == 200:
+                        print "Your comment has been successfully posted!!!!"
+                        break
+                    else:
+                        print "Status code not 200!"
+                        break
+                except:
+                    print "Url request exception occurred!!!"
+                    break
+    else:
+        print "Please add users!!"
+
+
+def list_comment():
+    index = select_user()
+    name = user_list[index].name
+    if index is not None:
+        for i in range(0, len(media_list)):
+            if media_list[i].name == name:
+                media_id = media_list[i].media_id
+                try:
+                    request_url = (BASE_URL + 'media/%s/comments?access_token=%s') % (media_id, ACCESS_TOKEN)
+                    print 'GET request url : %s' % (request_url)
+                    post_like = requests.get(request_url).json()
+                    if post_like['meta']['code'] == 200:
+                        for i in range(0, len(post_like['data'])):
+                            print "%s  commented by: %s" % (post_like['data'][i]['text'], post_like['data'][i]['from']['username'])
+                        break
+                    else:
+                        print "Status code not 200!"
+                        break
+                except:
+                    print "Url request exception occurred!!!"
+                    break
+    else:
+        print "Please add users!!"
+
 
 
 def start():
@@ -235,8 +284,8 @@ def start():
         print "5.Fetch the recent post of a user"
         print "6.Like the most recent post of a user"
         print "7.Unlike the most recent post of a user"
-        # print "g.Get a list of comments on the recent post of a user\n"
-        # print "h.Make a comment on the recent post of a user\n"
+        print "8.Post a comment on user's recent post"
+        print "9. Get a list of comments on user's recent post"
         # print "i.Delete negative comments from the recent post of a user\n"
         print "6.Exit"
         while True:
@@ -262,6 +311,10 @@ def start():
         elif choice == 7:
             delete_like()
         elif choice == 8:
+            post_comment()
+        elif choice == 9:
+           list_comment()
+        elif choice == 9:
             exit()
         else:
             print "Enter valid option"
