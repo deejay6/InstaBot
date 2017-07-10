@@ -2,7 +2,12 @@ import requests, urllib
 from termcolor import colored
 from access_token import ACCESS_TOKEN
 from user_detail import User, user_list,Recent_Media, media_list
+from clarifai import rest
+from clarifai.rest import ClarifaiApp
+import json
+import csv
 BASE_URL = 'https://api.instagram.com/v1/'
+
 
 # Function retrieve owner's information
 
@@ -271,6 +276,81 @@ def list_comment():
         print "Please add users!!"
 
 
+def get_images():
+    app = ClarifaiApp(api_key='c421a2e2717246b09706b18c36039e79')
+    model = app.models.get("general-v1.3")
+    app.inputs.delete_all()
+    # data1 = model.predict_by_url(url='https://samples.clarifai.com/metro-north.jpg')
+    # print data1
+    # with open('abc.json', 'wb') as outfile:
+    #     json.dump(data1, outfile)
+    # print data1['outputs'][0]['data']['concepts'][0]['name']
+    # mriutestbot id
+    id = 5716892371
+    media = {}
+    image_list = []
+    url_list = []
+    request_url = (BASE_URL + 'users/%s/media/recent/?access_token=%s') % (id, ACCESS_TOKEN)
+    print 'GET request url : %s' % (request_url)
+    user_media = requests.get(request_url).json()
+    if user_media['meta']['code'] == 200:
+        if len(user_media['data']):
+            for i in range(0, len(user_media['data'])):
+                media = {}
+                print user_media['data'][i]['images']['low_resolution']['url']
+                media['media_url'] = user_media['data'][i]['images']['low_resolution']['url']
+                media['latitude'] = user_media['data'][i]['location']['latitude']
+                media['longitude'] = user_media['data'][i]['location']['longitude']
+                app.inputs.create_image_from_url(media['media_url'])
+                image_list.append(media)
+        else:
+            print 'Post does not exist!'
+    else:
+        print 'Status code other than 200 received!'
+    data1 = app.inputs.search_by_predicted_concepts(concept='cyclone')
+    data2 = app.inputs.search_by_predicted_concepts(concept='flood')
+    data3 = app.inputs.search_by_predicted_concepts(concept='drought')
+    data4 = app.inputs.search_by_predicted_concepts(concept='earthquake')
+    print len(data1)
+    for i in range(0, len(data1)):
+        print data1[i].url
+        url = {}
+        url['url'] = data1[i].url
+        url['name'] = 'Cyclone'
+        url_list.append(url)
+
+    for i in range(0, len(data2)):
+        url = {}
+        print data2[i].url
+        url['url'] = data2[i].url
+        url['name'] = 'flood'
+        url_list.append(url)
+
+    for i in range(0 , len(data3)):
+        url = {}
+        print data3[i].url
+        url['url'] = data3[i].url
+        url['name'] = 'drought'
+        url_list.append(url)
+
+    for i in range(0 ,len(data4)):
+        url = {}
+        print data4[i].url
+        url['url'] = data4[i].url
+        url['name'] = 'earthquake'
+        url_list.append(url)
+    print url_list
+    print image_list
+    with open('image.csv', 'a') as out:
+        writer = csv.DictWriter(out, fieldnames=['Url', 'Longitude', 'Latitude', 'Name'], delimiter=',')
+        writer.writeheader()
+        for i in range(0, len(url_list)):
+            for j in range(0 ,len(image_list)):
+                if url_list[i]['url'] == image_list[j]['media_url']:
+                    print 'hello'
+                    writer.writerow({'Url': image_list[j]['media_url'], 'Latitude': image_list[j]['latitude'],
+                                     'Longitude': image_list[j]['longitude'], 'Name': url_list[i]['name']})
+
 
 def start():
 
@@ -285,9 +365,9 @@ def start():
         print "6.Like the most recent post of a user"
         print "7.Unlike the most recent post of a user"
         print "8.Post a comment on user's recent post"
-        print "9. Get a list of comments on user's recent post"
-        # print "i.Delete negative comments from the recent post of a user\n"
-        print "6.Exit"
+        print "9.Get a list of comments on user's recent post"
+        print "10.Getting natural Calamities Images"
+        print "11.Exit"
         while True:
             choice = raw_input("Enter Your Choice: ")
             try:
@@ -314,7 +394,9 @@ def start():
             post_comment()
         elif choice == 9:
            list_comment()
-        elif choice == 9:
+        elif choice == 10:
+           get_images()
+        elif choice == 11:
             exit()
         else:
             print "Enter valid option"
