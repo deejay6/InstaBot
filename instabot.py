@@ -2,9 +2,7 @@ import requests, urllib
 from termcolor import colored
 from access_token import ACCESS_TOKEN
 from user_detail import User, user_list,Recent_Media, media_list
-from clarifai import rest
 from clarifai.rest import ClarifaiApp
-import json
 import csv
 BASE_URL = 'https://api.instagram.com/v1/'
 
@@ -177,6 +175,8 @@ def fetch_user_recent_posts():
     else:
         print "Please Add Users"
 
+# Function to like recent post of user
+
 
 def like_recent_post():
     index = select_user()
@@ -202,6 +202,8 @@ def like_recent_post():
     else:
         print "Please add users!!"
 
+# Function delete a like from recent post of user
+
 
 def delete_like():
     index = select_user()
@@ -226,6 +228,8 @@ def delete_like():
     else:
         print "Please add users!!"
 
+# Function to post a comment on recent post of user
+
 
 def post_comment():
     index = select_user()
@@ -249,6 +253,8 @@ def post_comment():
                     break
     else:
         print "Please add users!!"
+
+# Function to list comments on recent post of a user
 
 
 def list_comment():
@@ -276,18 +282,15 @@ def list_comment():
         print "Please add users!!"
 
 
+# Function to det images of natural calamity using Clarifai API
+
+
 def get_images():
     app = ClarifaiApp(api_key='c421a2e2717246b09706b18c36039e79')
-    model = app.models.get("general-v1.3")
     app.inputs.delete_all()
-    # data1 = model.predict_by_url(url='https://samples.clarifai.com/metro-north.jpg')
-    # print data1
-    # with open('abc.json', 'wb') as outfile:
-    #     json.dump(data1, outfile)
-    # print data1['outputs'][0]['data']['concepts'][0]['name']
+    # For Better results have maximum users in sandbox
     # mriutestbot id
     id = 5716892371
-    media = {}
     image_list = []
     url_list = []
     request_url = (BASE_URL + 'users/%s/media/recent/?access_token=%s') % (id, ACCESS_TOKEN)
@@ -301,6 +304,7 @@ def get_images():
                 media['media_url'] = user_media['data'][i]['images']['low_resolution']['url']
                 media['latitude'] = user_media['data'][i]['location']['latitude']
                 media['longitude'] = user_media['data'][i]['location']['longitude']
+                media['location'] = user_media['data'][i]['location']['name']
                 app.inputs.create_image_from_url(media['media_url'])
                 image_list.append(media)
         else:
@@ -341,15 +345,15 @@ def get_images():
         url_list.append(url)
     print url_list
     print image_list
-    with open('image.csv', 'a') as out:
-        writer = csv.DictWriter(out, fieldnames=['Url', 'Longitude', 'Latitude', 'Name'], delimiter=',')
+    with open('image.csv', 'wb') as out:
+        writer = csv.DictWriter(out, fieldnames=['Url', 'Longitude', 'Latitude', 'Name', 'Location'], delimiter=';')
         writer.writeheader()
         for i in range(0, len(url_list)):
             for j in range(0 ,len(image_list)):
                 if url_list[i]['url'] == image_list[j]['media_url']:
-                    print 'hello'
                     writer.writerow({'Url': image_list[j]['media_url'], 'Latitude': image_list[j]['latitude'],
-                                     'Longitude': image_list[j]['longitude'], 'Name': url_list[i]['name']})
+                                     'Longitude': image_list[j]['longitude'], 'Name': url_list[i]['name'],
+                                     'Location': image_list[j]['location']})
 
 
 def start():
